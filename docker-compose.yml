@@ -1,50 +1,47 @@
 version: "3.8"
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: leds-db
-    restart: always
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345
-      POSTGRES_DB: leds_core
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
   strapi:
     image: tadeuaugustovilela/strapi-ledscore:latest
-    container_name: strapi-ledscore-v1
+    container_name: strapi-ledscore
     ports:
       - "1337:1337"
     environment:
       DATABASE_CLIENT: postgres
       DATABASE_NAME: leds_core
-      DATABASE_HOST: postgres
+      DATABASE_HOST: db
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: 12345
-      DATABASE_SSL: false
       NODE_ENV: development
-      APP_KEYS: 4pg7e2o3DfqSZhlOjnlUBw==,FfX1IhOtRRncjOBQuzzVTQ==,JWe+ZJ4NerBB5IacJWSdBQ==,otuggGUkdTdlLkncOniXWw==
-      API_TOKEN_SALT: yFRt1vF6IKK8a/nuAx9PWA==
-      ADMIN_JWT_SECRET: ozsZddHbdq3eCq56cTGpNA==
-      TRANSFER_TOKEN_SALT: qy0dpOIs/wZN+XiIj6IUtQ==
-      ENCRYPTION_KEY: fCaLOQTE58fulOfyobzqfA==
-      JWT_SECRET: F2b7RDWHE4qmwE/07uZ19Q==
-    depends_on:
-      - postgres
+    networks:
+      - ledsnet
 
   appsmith:
     image: appsmith/appsmith-ce
-    container_name: ledscore-v1
+    container_name: appsmith
     ports:
       - "8080:80"
     volumes:
       - ./stacks:/appsmith-stacks
     restart: unless-stopped
+    networks:
+      - ledsnet
 
-volumes:
-  pgdata:
+  db:
+    image: postgres:15
+    container_name: leds-postgres
+    environment:
+      POSTGRES_DB: leds_core
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - ./leds_core.backup:/docker-entrypoint-initdb.d/leds_core.backup
+    ports:
+      - "5433:5432"
+    networks:
+      - ledsnet
+
+networks:
+  ledsnet:
+    driver: bridge
