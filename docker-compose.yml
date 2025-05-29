@@ -7,14 +7,20 @@ services:
     ports:
       - "1337:1337"
     volumes:
-    - ./strapi-data:/opt/app
+      - ./strapi-data:/opt/app
     environment:
+      APP_KEYS: ${APP_KEYS}  # Ex: "sua_app_key1,sua_app_key2"
+      API_TOKEN_SALT: ${API_TOKEN_SALT}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+      TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      JWT_SECRET: ${JWT_SECRET}
       DATABASE_CLIENT: postgres
-      DATABASE_NAME: leds_core
+      DATABASE_NAME: ${DATABASE_NAME:-leds_core}
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-      DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: senhapica123
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       NODE_ENV: development
     restart: unless-stopped
     networks:
@@ -35,11 +41,12 @@ services:
     image: postgres:17
     container_name: leds-postgres
     environment:
-      POSTGRES_DB: leds_core
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: senhapica123
+      POSTGRES_DB: ${DATABASE_NAME:-leds_core}
+      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
       - ./leds_core.backup:/docker-entrypoint-initdb.d/leds_core.backup
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -49,3 +56,6 @@ services:
 networks:
   ledsnet:
     driver: bridge
+
+volumes:
+  postgres-data:
