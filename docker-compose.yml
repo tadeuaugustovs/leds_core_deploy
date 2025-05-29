@@ -6,14 +6,17 @@ services:
     container_name: strapi-ledscore
     ports:
       - "1337:1337"
+    volumes:
+    - ./strapi-data:/opt/app
     environment:
       DATABASE_CLIENT: postgres
       DATABASE_NAME: leds_core
       DATABASE_HOST: db
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: 12345
+      DATABASE_PASSWORD: senhapica123
       NODE_ENV: development
+    restart: unless-stopped
     networks:
       - ledsnet
 
@@ -29,16 +32,17 @@ services:
       - ledsnet
 
   db:
-    image: postgres:15
+    image: postgres:17
     container_name: leds-postgres
     environment:
       POSTGRES_DB: leds_core
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345
+      POSTGRES_PASSWORD: senhapica123
     volumes:
       - ./leds_core.backup:/docker-entrypoint-initdb.d/leds_core.backup
     ports:
-      - "5433:5432"
+      - "5432:5432"
+    restart: unless-stopped
     networks:
       - ledsnet
 
